@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import supabase from "../../utils/supabase";
+import { useTheme } from "../../contexts/ThemeContext";
+import { useThemeClasses } from "../../hooks/useThemeClasses";
 
 interface MenuItem {
   name: string;
@@ -20,6 +22,8 @@ const Sidebar = () => {
   const [userData, setUserData] = useState<UserData | null>(null);
   const location = useLocation();
   const navigate = useNavigate();
+  const { theme, toggleTheme } = useTheme();
+  const { classes } = useThemeClasses();
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -32,7 +36,6 @@ const Sidebar = () => {
           const authEmail = user.email || "";
           const authUserId = user.id;
 
-          // Fetch user data with business unit using a join
           const { data, error } = await supabase
             .from("profiles")
             .select(
@@ -58,7 +61,6 @@ const Sidebar = () => {
           }
 
           if (data) {
-            // Handle both array and object response from join
             let businessUnitName = "Unknown";
             if (data.business_units) {
               if (Array.isArray(data.business_units)) {
@@ -261,12 +263,14 @@ const Sidebar = () => {
 
   return (
     <aside
-      className={`${
-        isCollapsed ? "w-20" : "w-64"
-      } bg-slate-900 border-r border-slate-800 transition-all duration-300 flex flex-col`}
+      className={`${isCollapsed ? "w-20" : "w-64"} ${classes.bg.secondary} ${
+        classes.border.primary
+      } border-r transition-all duration-300 flex flex-col`}
     >
       {/* Logo Section */}
-      <div className="h-16 flex items-center justify-between px-4 border-b border-slate-800">
+      <div
+        className={`h-16 flex items-center justify-between px-4 ${classes.border.primary} border-b`}
+      >
         {!isCollapsed && (
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-400 rounded-lg flex items-center justify-center">
@@ -285,14 +289,16 @@ const Sidebar = () => {
               </svg>
             </div>
             <div>
-              <h2 className="text-white font-bold text-lg">AssetPro</h2>
-              <p className="text-slate-400 text-xs">Management</p>
+              <h2 className={`${classes.text.heading} font-bold text-lg`}>
+                AssetPro
+              </h2>
+              <p className={`${classes.text.secondary} text-xs`}>Management</p>
             </div>
           </div>
         )}
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
-          className="p-2 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-colors"
+          className={`p-2 rounded-lg ${classes.bg.hover} ${classes.text.secondary} hover:${classes.text.primary} transition-colors`}
         >
           <svg
             className={`w-5 h-5 transition-transform duration-300 ${
@@ -322,7 +328,7 @@ const Sidebar = () => {
                 className={`flex items-center gap-3 px-3 py-3 rounded-lg transition-all duration-200 group relative ${
                   isActive(item.path)
                     ? "bg-blue-600 text-white"
-                    : "text-slate-400 hover:bg-slate-800 hover:text-white"
+                    : `${classes.text.secondary} ${classes.bg.hover} hover:${classes.text.primary}`
                 }`}
               >
                 {isActive(item.path) && (
@@ -352,8 +358,91 @@ const Sidebar = () => {
         </ul>
       </nav>
 
-      {/* User Profile Section */}
-      <div className="border-t border-slate-800 p-4">
+      {/* Theme Toggle & User Profile Section */}
+      <div className={`${classes.border.primary} border-t p-4 space-y-3`}>
+        {/* Theme Toggle Button */}
+        <button
+          onClick={toggleTheme}
+          className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg ${classes.bg.hover} ${classes.text.secondary} hover:${classes.text.primary} transition-colors group`}
+          title={
+            theme === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode"
+          }
+        >
+          {!isCollapsed && (
+            <>
+              {theme === "dark" ? (
+                <>
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
+                    />
+                  </svg>
+                  <span className="text-sm font-medium">Light Mode</span>
+                </>
+              ) : (
+                <>
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
+                    />
+                  </svg>
+                  <span className="text-sm font-medium">Dark Mode</span>
+                </>
+              )}
+            </>
+          )}
+          {isCollapsed && (
+            <>
+              {theme === "dark" ? (
+                <svg
+                  className="w-5 h-5 mx-auto"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
+                  />
+                </svg>
+              ) : (
+                <svg
+                  className="w-5 h-5 mx-auto"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
+                  />
+                </svg>
+              )}
+            </>
+          )}
+        </button>
+
+        {/* User Profile */}
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-semibold">
             {userData ? getInitials(userData.name) : "??"}
@@ -361,10 +450,12 @@ const Sidebar = () => {
           {!isCollapsed && (
             <>
               <div className="flex-1 min-w-0">
-                <p className="text-white font-medium text-sm truncate">
+                <p
+                  className={`${classes.text.primary} font-medium text-sm truncate`}
+                >
                   {userData?.name || "Loading..."}
                 </p>
-                <p className="text-slate-400 text-xs truncate">
+                <p className={`${classes.text.secondary} text-xs truncate`}>
                   {userData?.email || ""}
                 </p>
                 <p className="text-cyan-400 text-xs truncate">
@@ -373,7 +464,7 @@ const Sidebar = () => {
               </div>
               <button
                 onClick={handleLogout}
-                className="p-2 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-colors"
+                className={`p-2 rounded-lg ${classes.bg.hover} ${classes.text.secondary} hover:${classes.text.primary} transition-colors`}
                 title="Logout"
               >
                 <svg
